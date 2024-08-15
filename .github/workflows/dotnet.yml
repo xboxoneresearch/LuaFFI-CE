@@ -14,6 +14,7 @@ jobs:
             build-target: linux-x64
           - os: windows-latest
             build-target: win-x64
+            extension: ".exe"
           - os: macos-latest
             build-target: osx-x64
 
@@ -33,7 +34,7 @@ jobs:
     - name: Package
       run: |
         mkdir release
-        cp Twodump/bin/Release/net8.0/${{ matrix.build-target }}/publish/Twodump* release/
+        cp Twodump/bin/Release/net8.0/${{ matrix.build-target }}/publish/Twodump${{ matrix.extension }} release/
 
         7z a -tzip Twodump_${{ matrix.os }}.zip release/*
 
