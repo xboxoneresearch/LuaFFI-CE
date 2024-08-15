@@ -1,0 +1,51 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            build-target: linux-x64
+          - os: windows-latest
+            build-target: win-x64
+            extension: ".exe"
+          - os: macos-latest
+            build-target: osx-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Build Twodump
+      working-directory: Twodump
+      run: dotnet publish -c Release -r ${{ matrix.build-target }}
+
+    - name: Package
+      run: |
+        mkdir release
+        cp Twodump/bin/Release/net8.0/${{ matrix.build-target }}/publish/Twodump${{ matrix.extension }} release/
+
+        7z a -tzip Twodump_${{ matrix.os }}.zip release/*
+
+    - name: Upload artifacts (dotnet)
+      uses: actions/upload-artifact@v4
+      with:
+        name: Twodump_${{ matrix.os }}
+        path: release/*
+
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: Twodump_${{ matrix.os }}.zip
