@@ -33,7 +33,7 @@ jobs:
     - name: Package
       run: |
         mkdir release
-        cp Twodump/bin/Release/net8.0/Twodump* release/
+        cp Twodump/bin/Release/net8.0/${{ matrix.build-target }}/publish/Twodump* release/
 
         7z a -tzip Twodump_${{ matrix.os }}.zip release/*
 
