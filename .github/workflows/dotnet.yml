@@ -32,25 +32,25 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - name: Build TwoDump
-      working-directory: ./TwoDump
+    - name: Build Twodump
+      working-directory: ./Twodump
       run: dotnet publish -c Release -r ${{ matrix.build-target }}
 
     - name: Package
       run: |
         mkdir release
-        cp TwoDump/bin/Release/net8.0/TwoDump* release/
+        cp Twodump/bin/Release/net8.0/Twodump* release/
 
-        7z a -tzip TwoDump_${{ matrix.os }}.zip ./release/*
+        7z a -tzip Twodump_${{ matrix.os }}.zip ./release/*
 
     - name: Upload artifacts (dotnet)
       uses: actions/upload-artifact@v4
       with:
-        name: TwoDump
+        name: Twodump
         path: ./release/*
 
     - name: Release
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: TwoDump_${{ matrix.os }}.zip
+        files: Twodump_${{ matrix.os }}.zip
