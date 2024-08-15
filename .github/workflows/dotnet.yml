@@ -41,7 +41,7 @@ jobs:
         mkdir release
         cp TwoDump/bin/Release/net8.0/TwoDump* release/
 
-        7z a -tzip TwoDump.zip ./release/*
+        7z a -tzip TwoDump_${{ matrix.os }}.zip ./release/*
 
     - name: Upload artifacts (dotnet)
       uses: actions/upload-artifact@v4
@@ -53,4 +53,4 @@ jobs:
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: TwoDump.zip
+        files: TwoDump_${{ matrix.os }}.zip
