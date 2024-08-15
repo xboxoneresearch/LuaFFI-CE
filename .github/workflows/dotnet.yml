@@ -13,7 +13,7 @@ jobs:
           - os: ubuntu-latest
             build-target: linux-x64
           - os: ubuntu-latest
-            build-target: linux-arm
+            build-target: linux-arm64
           - os: windows-latest
             build-target: win-x64
           - os: windows-latest
