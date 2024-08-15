@@ -12,16 +12,10 @@ jobs:
         include:
           - os: ubuntu-latest
             build-target: linux-x64
-          - os: ubuntu-latest
-            build-target: linux-arm64
           - os: windows-latest
             build-target: win-x64
-          - os: windows-latest
-            build-target: win-arm64
           - os: macos-latest
             build-target: osx-x64
-          - os: macos-latest
-            build-target: osx-arm64
 
     runs-on: ${{ matrix.os }}
 
@@ -33,7 +27,7 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Build Twodump
-      working-directory: ./Twodump
+      working-directory: Twodump
       run: dotnet publish -c Release -r ${{ matrix.build-target }}
 
     - name: Package
@@ -41,13 +35,13 @@ jobs:
         mkdir release
         cp Twodump/bin/Release/net8.0/Twodump* release/
 
-        7z a -tzip Twodump_${{ matrix.os }}.zip ./release/*
+        7z a -tzip Twodump_${{ matrix.os }}.zip release/*
 
     - name: Upload artifacts (dotnet)
       uses: actions/upload-artifact@v4
       with:
         name: Twodump
-        path: ./release/*
+        path: release/*
 
     - name: Release
       uses: softprops/action-gh-release@v2
