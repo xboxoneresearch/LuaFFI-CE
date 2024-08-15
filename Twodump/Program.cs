@@ -6,6 +6,15 @@ using System.Text;
 using Spectre.Console;
 using Twodump;
 
+
+string ReplacePathSeparators(string path) => 
+    Path.DirectorySeparatorChar switch
+    {
+        '\\' => path.Replace('/', '\\'),
+        '/' => path.Replace('\\', '/'),
+        _ => path
+    };
+
 var fileDataBuffer = new byte[0x1000000];
 using var listener = new TcpListener(IPAddress.Any, 8126);
 listener.Start();
@@ -52,9 +61,11 @@ while (true)
                     if (filename.Length > 1 && filename[1] == ':')
                         filename = $"{filename[0]}x{filename[2..]}";
 
+                    filename = ReplacePathSeparators(filename);
+
                     if (info.Attributes.HasFlag(FileAttributes.Directory) ||
                         info.Attributes.HasFlag(FileAttributes.ReparsePoint) ||
-                        filename.EndsWith('\\'))
+                        filename.EndsWith(Path.DirectorySeparatorChar))
                     {
                         Directory.CreateDirectory(filename);
                     }
