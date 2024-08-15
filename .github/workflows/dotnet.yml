@@ -41,7 +41,7 @@ jobs:
     - name: Upload artifacts (dotnet)
       uses: actions/upload-artifact@v4
       with:
-        name: Twodump
+        name: Twodump_${{ matrix.os }}
         path: release/*
 
     - name: Release
