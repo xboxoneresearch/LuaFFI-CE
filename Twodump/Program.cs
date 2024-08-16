@@ -1,4 +1,5 @@
 ﻿
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -19,12 +20,14 @@ var fileDataBuffer = new byte[0x1000000];
 using var listener = new TcpListener(IPAddress.Any, 8126);
 listener.Start();
 
-AnsiConsole.MarkupLine("Now listening on port [white bold]8126[/] for connections.");
-
 while (true)
 {
+    AnsiConsole.MarkupLine("Now listening on port [white bold]8126[/] for connections.");
+
     var socket = listener.AcceptTcpClient();
-    AnsiConsole.Progress()
+    AnsiConsole
+        .Progress()
+        .HideCompleted(true)
         .Columns(
             new TaskDescriptionColumn(),
             new ProgressBarColumn(),
@@ -35,6 +38,10 @@ while (true)
             new SpinnerColumn())
         .Start(ctx =>
         {
+            var fileCount = 0;
+            var totalFileSize = 0uL;
+            var stopwatch = new Stopwatch();
+
             var stream = socket.GetStream();
             using (stream)
             {
@@ -44,6 +51,8 @@ while (true)
 
                 while ((dumpInfo[0].Flags & FileFlags.BeginTransfer) == 0)
                     stream.ReadExactly(MemoryMarshal.Cast<DumpInfo, byte>(dumpInfo));
+
+                stopwatch.Start();
 
                 while (socket.Connected)
                 {
@@ -73,9 +82,12 @@ while (true)
                     {
                         if ((info.Flags & FileFlags.FailedToRead) != 0)
                         {
-                            ctx.AddTask($"[red bold]Failed to transfer {filename}[/]", false, info.FileSize);
+                            AnsiConsole.MarkupLine($"[red bold]Failed to transfer {filename}.[/]");
                             continue;
                         }
+
+                        fileCount++;
+                        totalFileSize += info.FileSize;
 
                         var task = ctx.AddTask($"[white bold]{filename}[/]", true, info.FileSize);
 
@@ -98,16 +110,27 @@ while (true)
 
                         task.StopTask();
 
+                        // There is a slight memory leak here,
+                        // as the tasks never get removed from the list.
+                        // Using NativeAOT makes it less severe - the proper fix would be to just remove it,
+                        // but upstream spectre.console does not currently provide an API for this.
+                        // task.RemoveTask(task); I implemented this myself and it did solve the issue
+
+                        AnsiConsole.MarkupLine($@"[white bold]Transferred[/] [grey italic]{filename}[/] [white bold]in[/] [green bold]{task.ElapsedTime:mm\m\ ss\s}.[/]");
+
                         File.SetCreationTime(filename, DateTime.FromFileTime(info.LastWriteTime));
                     }
                 }
+
+                stopwatch.Stop();
+
+                AnsiConsole.MarkupLine($@"[green bold]Successfully[/] transferred {fileCount} files, totalling {totalFileSize} bytes, in {stopwatch.Elapsed:h\h\ mm\m\ ss\s}.");
 
                 ctx.Refresh();
             }
         });
 
-    var result =
-        AnsiConsole.Confirm("[green bold]Finished[/] [white bold]transferring files![/] Do you want to exit?");
+    var result = AnsiConsole.Confirm("Do you want to exit?");
 
     if (result)
         break;
