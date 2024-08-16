@@ -524,7 +524,6 @@ uploadFilesRecursively = function(sock, dirname)
                 infoSent = true
               end
 
-              local actuallyReadBytes = currentlyReadBytesPtr[0]
               SocketSend(sock, fileBuf.buffer, actuallyReadBytes, 0)
               remaining = remaining - actuallyReadBytes
             end
