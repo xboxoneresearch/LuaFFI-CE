@@ -510,7 +510,9 @@ uploadFilesRecursively = function(sock, dirname)
               local currentReadCount = math.min(remaining, 0x1000000)
 
               local readResult = kernelx.ReadFile(fileHandle, fileBuf.buffer, currentReadCount, currentlyReadBytesPtr, nil)
-              if not readResult then
+              local actuallyReadBytes = currentlyReadBytesPtr[0]
+
+              if not readResult or actuallyReadBytes == 0 then
                 sendLog("Transfer of file \"" .. fullName .. "\" failed: Failed to read file")
                 sendInfo(finddata, fullName, INFO_TRANSFER_READ_FAILED)
                 readFailed = true
@@ -542,7 +544,9 @@ uploadFilesRecursively = function(sock, dirname)
             local currentReadCount = math.min(remaining, 0x1000000)
 
             local readResult = kernelx.ReadFile(fileHandle, fileBuf.buffer, currentReadCount, currentlyReadBytesPtr, nil)
-            if not readResult then
+            local actuallyReadBytes = currentlyReadBytesPtr[0]
+
+            if not readResult or actuallyReadBytes == 0 then
               sendLog("Transfer of file \"" .. fullName .. "\" failed: Failed to read file")
               sendInfo(finddata, fullName, INFO_TRANSFER_READ_FAILED)
               readFailed = true
@@ -554,7 +558,6 @@ uploadFilesRecursively = function(sock, dirname)
               infoSent = true
             end
 
-            local actuallyReadBytes = currentlyReadBytesPtr[0]
             SocketSend(sock, fileBuf.buffer, actuallyReadBytes, 0)
             remaining = remaining - actuallyReadBytes
           end
