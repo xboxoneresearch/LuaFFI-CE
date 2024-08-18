@@ -80,16 +80,19 @@ while (true)
                     }
                     else
                     {
+
+                        var escapedFilename = Markup.Escape(filename);
+
                         if ((info.Flags & FileFlags.FailedToRead) != 0)
                         {
-                            AnsiConsole.MarkupLine($"[red bold]Failed to transfer {filename}.[/]");
+                            AnsiConsole.MarkupLine($"[red bold]Failed to transfer {escapedFilename}.[/]");
                             continue;
                         }
 
                         fileCount++;
                         totalFileSize += info.FileSize;
 
-                        var task = ctx.AddTask($"[white bold]{filename}[/]", true, info.FileSize);
+                        var task = ctx.AddTask($"[white bold]{escapedFilename}[/]", true, info.FileSize);
 
                         // Just for good measure
                         var fullPath = Path.GetFullPath(filename);
@@ -116,7 +119,7 @@ while (true)
                         // but upstream spectre.console does not currently provide an API for this.
                         // task.RemoveTask(task); I implemented this myself and it did solve the issue
 
-                        AnsiConsole.MarkupLine($@"[white bold]Transferred[/] [grey italic]{filename}[/] [white bold]in[/] [green bold]{task.ElapsedTime:mm\m\ ss\s}.[/]");
+                        AnsiConsole.MarkupLineInterpolated($@"[white bold]Transferred[/] [grey italic]{escapedFilename}[/] [white bold]in[/] [green bold]{task.ElapsedTime:mm\m\ ss\s}.[/]");
 
                         File.SetCreationTime(filename, DateTime.FromFileTime(info.LastWriteTime));
                     }
@@ -124,7 +127,7 @@ while (true)
 
                 stopwatch.Stop();
 
-                AnsiConsole.MarkupLine($@"[green bold]Successfully[/] transferred {fileCount} files, totalling {totalFileSize} bytes, in {stopwatch.Elapsed:h\h\ mm\m\ ss\s}.");
+                AnsiConsole.MarkupLineInterpolated($@"[green bold]Successfully[/] transferred {fileCount} files, totalling {totalFileSize} bytes, in {stopwatch.Elapsed:h\h\ mm\m\ ss\s}.");
 
                 ctx.Refresh();
             }
